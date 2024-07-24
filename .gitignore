@@ -1,0 +1,45 @@
+# Ignore the node_modules folder
+node_modules/
+
+# Ignore logs
+logs
+*.log
+npm-debug.log*
+
+# Ignore dotenv environment variable files
+.env
+
+# Ignore OS generated files
+.DS_Store
+
+# Ignore Docker-related files
+docker-compose.yml
+docker-compose.override.yml
+.dockerignore
+
+# Ignore database files
+*.sql
+*.sqlite
+*.db
+
+# Ignore compiled files
+*.out
+*.o
+*.pyc
+*.class
+
+# Ignore coverage reports
+coverage/
+*.lcov
+
+# Ignore build files
+build/
+dist/
+tmp/
+
+# Ignore package managers lock files
+package-lock.json
+yarn.lock
+
+# Ignore other sensitive files
+.secret
