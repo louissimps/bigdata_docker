@@ -1,0 +1,175 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: louissimps/arm64-zookeeper:3.5.9
+    ports:
+      - "2181:2181"
+    networks:
+      - bigdata_network
+    deploy:
+      replicas: 1
+
+  kafka:
+    image: louissimps/arm64-kafka:3.2.0
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG_DIRS: /kafka/logs
+    depends_on:
+      - zookeeper
+    volumes:
+      - kafka-data:/var/lib/kafka
+    networks:
+      - bigdata_network
+    deploy:
+      replicas: 1
+
+  hadoop-namenode:
+    image: louissimps/arm64-hadoop-namenode:3.2.4
+    environment:
+      - CLUSTER_NAME=test
+    volumes:
+      - hadoop-namenode:/hadoop/dfs/name
+    ports:
+      - "9870:9870"
+      - "8020:8020"
+    networks:
+      - bigdata_network
+    deploy:
+      replicas: 1
+
+  hadoop-datanode:
+    image: louissimps/arm64-hadoop-datanode:3.2.4
+    environment:
+      - CLUSTER_NAME=test
+      - CORE_CONF_hadoop_http_staticuser_user=root
+      - HDFS_CONF_dfs_datanode_data_dir=file:///hadoop/dfs/data
+    volumes:
+      - hadoop-datanode:/hadoop/dfs/data
+    ports:
+      - "9864:9864"
+    networks:
+      - bigdata_network
+    deploy:
+      replicas: 2
+
+  hadoop-nodemanager:
+    image: louissimps/arm64-hadoop-nodemanager:3.2.4
+    environment:
+      - CLUSTER_NAME=test
+    volumes:
+      - hadoop-nodemanager:/hadoop/yarn/local
+    ports:
+      - "8042:8042"
+    networks:
+      - bigdata_network
+    deploy:
+      replicas: 2
+
+  spark-master:
+    image: louissimps/arm64-spark-master:3.2.1
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    environment:
+      - SPARK_MODE=master
+      - SPARK_MASTER_WEBUI_PORT=8080
+    networks:
+      - bigdata_network
+    deploy:
+      replicas: 1
+
+  spark-worker:
+    image: louissimps/arm64-spark-worker:3.2.1
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER=spark://spark-master:7077
+    networks:
+      - bigdata_network
+    deploy:
+      replicas: 2
+
+  hive-metastore:
+    image: louissimps/arm64-hive-metastore:3.1.3
+    environment:
+      - HIVE_METASTORE_USER=root
+      - HIVE_METASTORE_PASSWORD=root
+      - HIVE_METASTORE_DB=hive
+      - HIVE_METASTORE_DB_TYPE=mysql
+      - HIVE_METASTORE_JDBC_URL=jdbc:mysql://mysql:3306/hive
+      - HIVE_VER=3.1.3
+      - SCHEMA_VER=3.1.0
+      - POSTGRES_JDBC_DRIVER_VERSION=42.2.20
+    depends_on:
+      - mysql
+    networks:
+      - bigdata_network
+    deploy:
+      replicas: 1
+
+  hive-server:
+    image: louissimps/arm64-hive-server:3.1.3
+    environment:
+      - SERVICE=hiveserver2
+      - HIVE_METASTORE_URI=thrift://hive-metastore:9083
+    ports:
+      - "10000:10000"
+    depends_on:
+      - hive-metastore
+    networks:
+      - bigdata_network
+    deploy:
+      replicas: 1
+
+  zeppelin:
+    image: louissimps/arm64-zeppelin:0.10.1
+    ports:
+      - "8087:8087"
+    environment:
+      - ZEPPELIN_ADDR=0.0.0.0
+      - ZEPPELIN_PORT=8087
+      - ZEPPELIN_NOTEBOOK_DIR=/zeppelin/notebook
+      - ZEPPELIN_CONF_DIR=/zeppelin/conf
+      - SPARK_HOME=/spark
+      - HADOOP_CONF_DIR=/hadoop/etc/hadoop
+      - HIVE_HOME=/hive
+      - HIVE_CONF_DIR=/hive/conf
+    volumes:
+      - zeppelin-data:/zeppelin
+    depends_on:
+      - spark-master
+      - hive-server
+    networks:
+      - bigdata_network
+    deploy:
+      replicas: 1
+
+  mysql:
+    image: arm64v8/mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hive
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - bigdata_network
+    deploy:
+      replicas: 1
+
+networks:
+  bigdata_network:
+    driver: overlay
+
+volumes:
+  kafka-data:
+  hadoop-namenode:
+  hadoop-datanode:
+  hadoop-nodemanager:
+  zeppelin-data:
+  mysql-data:

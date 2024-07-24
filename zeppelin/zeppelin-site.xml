@@ -1,0 +1,55 @@
+<configuration>
+  <property>
+    <name>zeppelin.server.addr</name>
+    <value>0.0.0.0</value>
+    <description>Bind address for Zeppelin server</description>
+  </property>
+
+  <property>
+    <name>zeppelin.server.port</name>
+    <value>8087</value>
+    <description>Port number for Zeppelin server</description>
+  </property>
+
+  <property>
+    <name>zeppelin.notebook.dir</name>
+    <value>/zeppelin/notebook</value>
+    <description>Notebook directory</description>
+  </property>
+
+  <property>
+    <name>zeppelin.conf.dir</name>
+    <value>/zeppelin/conf</value>
+    <description>Configuration directory</description>
+  </property>
+
+  <property>
+    <name>zeppelin.interpreter.dir</name>
+    <value>/zeppelin/interpreter</value>
+    <description>Interpreter directory</description>
+  </property>
+
+  <property>
+    <name>zeppelin.interpreter.localRepo</name>
+    <value>/zeppelin/local-repo</value>
+    <description>Local repository for interpreter</description>
+  </property>
+
+  <property>
+    <name>zeppelin.recovery.dir</name>
+    <value>/zeppelin/recovery</value>
+    <description>Recovery directory</description>
+  </property>
+
+  <property>
+    <name>zeppelin.spark.useHiveContext</name>
+    <value>true</value>
+    <description>Use HiveContext instead of SQLContext if hive-site.xml is found in classpath</description>
+  </property>
+
+  <property>
+    <name>zeppelin.server.ssl</name>
+    <value>false</value>
+    <description>Enable SSL for Zeppelin server</description>
+  </property>
+</configuration>
